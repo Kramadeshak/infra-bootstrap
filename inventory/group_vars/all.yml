@@ -1,0 +1,10 @@
+shell: zsh
+
+install_zsh: true
+install_tmux: true
+install_editor: true
+install_fonts: false
+
+
+dotfiles_repo: "git@github.com:kramadeshak/infra-bootstrap.git"
+dotfiles_dir: "{{ ansible_env.HOME }}/.dotfiles"

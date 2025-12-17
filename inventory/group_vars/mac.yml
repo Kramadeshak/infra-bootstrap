@@ -1,0 +1,5 @@
+install_fonts: true
+build_neovim: false
+user_name: sarthak
+machine_types:
+  - mac
