@@ -1,5 +1,0 @@
-install_fonts: true
-build_neovim: false
-user_name: phoenix
-machine_types:
-  - server

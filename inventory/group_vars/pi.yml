@@ -1,6 +1,0 @@
-install_fonts: true
-build_neovim: true
-user_name: admin
-machine_types:
-  - pi5
-  - pi400
