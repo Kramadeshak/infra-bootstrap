@@ -1,0 +1,11 @@
+timezone: Asia/Kolkata
+
+base_packages:
+  - git
+  - curl
+  - wget
+  - unzip
+
+default_shell: zsh
+default_editor: nvim
+default_font: jetbrains_mono
