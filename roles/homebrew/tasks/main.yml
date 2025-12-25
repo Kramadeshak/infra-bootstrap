@@ -13,7 +13,7 @@
 
 - name: Ensure Homebrew is in PATH (Apple Silicon)
   lineinfile:
-    path: "{{ ansible_env.HOME }}/.zprofile"
+    path: "/home/{{ ansible_env.SUDO_USER }}/.zprofile"
     line: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
     create: true
   when:

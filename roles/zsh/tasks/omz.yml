@@ -1,6 +1,6 @@
 - name: Check if Oh My Zsh is installed
   stat:
-    path: "{{ ansible_env.HOME }}/.oh-my-zsh"
+    path: "/home/{{ ansible_env.SUDO_USER }}/.oh-my-zsh"
   register: omz_dir
 
 - name: Install Oh My Zsh
@@ -8,3 +8,4 @@
     RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   when: not omz_dir.stat.exists
+  become: true

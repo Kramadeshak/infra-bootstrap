@@ -6,3 +6,9 @@
 
 - name: Install and configure Oh My Zsh plugins
   include_tasks: omz-plugin.yml
+
+- name: Ensure zsh is the default shell for the login user
+  user:
+    name: "{{ ansible_user }}"
+    shell: /bin/zsh
+  become: true
