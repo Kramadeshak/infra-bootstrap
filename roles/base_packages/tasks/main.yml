@@ -1,0 +1,12 @@
+---
+- name: Install base packages on Debian-based systems
+  import_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Install base packages on Fedora / RedHat systems
+  import_tasks: fedora.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Install base packages on macOS
+  import_tasks: darwin.yml
+  when: ansible_os_family == "Darwin"

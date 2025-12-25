@@ -1,0 +1,7 @@
+---
+- name: Install base packages on macOS
+  tags: [base_packages, brew]
+  include_role:
+    name: homebrew
+  vars:
+    homebrew_packages: "{{ base_packages }}"

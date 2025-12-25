@@ -1,0 +1,28 @@
+- name: Check if Homebrew is installed
+  command: which brew
+  register: brew_check
+  failed_when: false
+  changed_when: false
+
+- name: Install Homebrew (if missing)
+  become: true
+  shell: |
+    NONINTERACTIVE=1 /bin/bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  when: brew_check.rc != 0
+
+- name: Ensure Homebrew is in PATH (Apple Silicon)
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zprofile"
+    line: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+    create: true
+  when:
+    - brew_check.rc != 0
+    - ansible_architecture == "arm64"
+
+- name: Install Homebrew packages
+  shell: |
+    brew list {{ item }} >/dev/null 2>&1 || brew install {{ item }}
+  loop: "{{ homebrew_packages }}"
+  become: true
+  when: homebrew_packages | length > 0

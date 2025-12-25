@@ -1,0 +1,6 @@
+---
+- name: Install base packages (Fedora)
+  dnf:
+    name: "{{ base_packages }}"
+    state: present
+  become: true
