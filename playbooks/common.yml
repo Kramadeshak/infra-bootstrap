@@ -1,0 +1,16 @@
+- name: Timezone check and correction
+  hosts: all
+  roles:
+    - timezone
+
+- name: Install base packages
+  hosts: all
+  gather_facts: false
+  roles:
+    - base_packages
+
+- name: Install zsh
+  hosts: all
+  gather_facts: false
+  roles:
+    - zsh

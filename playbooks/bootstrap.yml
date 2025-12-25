@@ -1,0 +1,2 @@
+- name: Bootstrap entrypoint
+  import_playbook: common.yml
