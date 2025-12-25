@@ -1,0 +1,8 @@
+---
+- name: Set timezone on Linux
+  import_tasks: linux.yml
+  when: ansible_system == "Linux"
+
+- name: Set timezone on macOS
+  import_tasks: darwin.yml
+  when: ansible_system == "Darwin"

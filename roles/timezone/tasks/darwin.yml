@@ -1,0 +1,4 @@
+---
+- name: Set timezone on macOS
+  command: systemsetup -settimezone "{{ timezone }}"
+  changed_when: false

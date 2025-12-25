@@ -1,0 +1,14 @@
+---
+- name: Ensure /etc/localtime is set correctly
+  file:
+    src: "/usr/share/zoneinfo/{{ timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+  notify: restart_crond
+
+- name: Set /etc/timezone if present (Debian-based)
+  copy:
+    content: "{{ timezone }}\n"
+    dest: /etc/timezone
+  when: ansible_os_family == "Debian"
