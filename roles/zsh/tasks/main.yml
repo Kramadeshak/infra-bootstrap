@@ -1,0 +1,8 @@
+- name: Install Zsh
+  include_tasks: zsh.yml
+
+- name: Install Oh My Zsh
+  include_tasks: omz.yml
+
+- name: Install and configure Oh My Zsh plugins
+  include_tasks: omz-plugin.yml

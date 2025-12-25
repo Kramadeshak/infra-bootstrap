@@ -1,0 +1,20 @@
+zsh_plugins:
+  - name: powerlevel10k
+    type: theme
+    repo: https://github.com/romkatv/powerlevel10k.git
+  - name: zsh-syntax-highlighting
+    type: plugin
+    repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+  - name: zsh-autosuggestions
+    type: plugin
+    repo: https://github.com/zsh-users/zsh-autosuggestions.git
+  - name: history-substring-search
+    type: plugin
+    repo: https://github.com/zsh-users/zsh-history-substring-search.git
+
+zsh_builtin_plugins:
+  - git
+  - z
+  - sudo
+  - command-not-found
+  - fzf

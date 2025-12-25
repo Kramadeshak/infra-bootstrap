@@ -1,0 +1,34 @@
+---
+- name: Ensure Oh My Zsh custom directories exist
+  file:
+    path: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - plugins
+    - themes
+
+- name: Install or update Oh My Zsh plugins/themes
+  git:
+    repo: "{{ item.repo }}"
+    dest: >-
+      {{ ansible_env.HOME }}/.oh-my-zsh/custom/
+      {{ 'themes' if item.type == 'theme' else 'plugins' }}/
+      {{ item.name }}
+    depth: 1
+    update: yes
+  loop: "{{ zsh_plugins }}"
+
+- name: Install Zsh plugin configuration
+  copy:
+    src: zshrc.plugins.zsh
+    dest: "{{ ansible_env.HOME }}/.zshrc.plugins.zsh"
+    mode: '0644'
+
+- name: Ensure plugin config is sourced in .zshrc
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    line: 'source ~/.zshrc.plugins.zsh'
+    create: true
+    state: present
+

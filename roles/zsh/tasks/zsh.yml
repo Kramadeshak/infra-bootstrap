@@ -1,0 +1,22 @@
+- name: Install zsh on Debian
+  apt:
+    name: zsh
+    state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Install zsh on Fedora
+  dnf:
+    name: zsh
+    state: present
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Install zsh on macOS
+  include_role:
+    name: homebrew
+  vars:
+    homebrew_packages:
+      - zsh
+      - fzf
+  when: ansible_os_family == "Darwin"
