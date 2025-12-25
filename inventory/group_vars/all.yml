@@ -5,6 +5,7 @@ base_packages:
   - curl
   - wget
   - unzip
+  - tmux
 
 default_shell: zsh
 default_editor: nvim
