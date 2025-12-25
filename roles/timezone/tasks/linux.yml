@@ -5,7 +5,7 @@
     dest: /etc/localtime
     state: link
     force: true
-  notify: restart_crond
+  notify: restart cron service
 
 - name: Set /etc/timezone if present (Debian-based)
   copy:

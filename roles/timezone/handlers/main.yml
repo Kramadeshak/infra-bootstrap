@@ -1,0 +1,5 @@
+---
+- name: restart cron service
+  service:
+    name: "{{ cron_service_name }}"
+    state: restarted

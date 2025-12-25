@@ -1,16 +1,23 @@
 - name: Timezone check and correction
   hosts: all
+  become: true
   roles:
     - timezone
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
 
 - name: Install base packages
   hosts: all
   gather_facts: false
   roles:
     - base_packages
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
 
 - name: Install zsh
   hosts: all
   gather_facts: false
   roles:
     - zsh
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
