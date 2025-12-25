@@ -14,4 +14,6 @@ plugins=(
 )
 
 # Powerlevel10k instant prompt
-echo 'source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+source $ZSH_CUSTOM/themes/powerlevel10k/powerlevel10k.zsh-theme
+source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
