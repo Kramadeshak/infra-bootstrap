@@ -1,17 +1,17 @@
 ---
-- name: Install base packages (Fedora)
+- name: Install neovim package (Fedora)
   dnf:
-    name: "nvim"
+    name: "neovim"
     state: present
   become: true
   when: ansible_os_family == "RedHat"
 
-- name: Install base packages on macOS
-  tags: [nvim, brew]
+- name: Install neovim package on macOS
+  tags: [neovim, brew]
   include_role:
     name: homebrew
   vars:
-    homebrew_packages: "nvim"
+    homebrew_packages: "neovim"
   when: ansible_os_family == "Darwin"
 
 - name: Install base packages on Debian-based systems
