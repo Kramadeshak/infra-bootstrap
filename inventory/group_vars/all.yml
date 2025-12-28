@@ -5,6 +5,8 @@ base_packages:
   - curl
   - wget
   - unzip
+  - fd
+  - ripgrep
   - tmux
 
 default_shell: zsh
