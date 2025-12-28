@@ -1,0 +1,112 @@
+---
+- name: Install Neovim build dependencies
+  apt:
+    name: "{{ nvim_build_dependencies }}"
+    state: present
+    update_cache: true
+  become: true
+
+# ----------------------------
+# Check if nvim exists
+# ----------------------------
+- name: Check if nvim binary exists
+  stat:
+    path: "{{ nvim_binary_path }}"
+  register: nvim_binary
+
+- name: Get installed nvim version
+  command: "{{ nvim_binary_path }} --version"
+  register: nvim_version_output
+  changed_when: false
+  failed_when: false
+  when: nvim_binary.stat.exists
+
+- name: Parse installed nvim version
+  set_fact:
+    nvim_installed_version: >-
+      {{ nvim_version_output.stdout_lines[0]
+         | regex_search('v?([0-9]+\\.[0-9]+\\.[0-9]+)')
+      }}
+  when: nvim_binary.stat.exists
+
+# ----------------------------
+# Fetch latest GitHub version
+# ----------------------------
+- name: Fetch latest Neovim release info
+  uri:
+    url: "{{ nvim_github_api }}"
+    return_content: true
+  register: nvim_latest_release
+
+- name: Set latest nvim version fact
+  set_fact:
+    nvim_latest_version: "{{ nvim_latest_release.json.tag_name | regex_replace('^v', '') }}"
+
+# ----------------------------
+# Decide if build is required
+# ----------------------------
+- name: Determine if Neovim build is required
+  set_fact:
+    nvim_build_required: >-
+      {{
+        (not nvim_binary.stat.exists) or
+        (nvim_installed_version is not defined) or
+        (nvim_installed_version != nvim_latest_version)
+      }}
+
+# ----------------------------
+# Build & install Neovim
+# ----------------------------
+- name: Remove existing Neovim source tree if rebuilding
+  file:
+    path: "{{ nvim_build_dir }}"
+    state: absent
+  become: true
+  when: nvim_build_required
+
+- name: Clone Neovim repository
+  git:
+    repo: "{{ nvim_repo_url }}"
+    dest: "{{ nvim_build_dir }}"
+    version: "v{{ nvim_latest_version }}"
+    depth: 1
+  become: true
+  when: nvim_build_required
+
+- name: Build Neovim
+  command: >
+    make CMAKE_BUILD_TYPE=Release
+  args:
+    chdir: "{{ nvim_build_dir }}"
+  become: true
+  when: nvim_build_required
+
+- name: Install Neovim
+  command: >
+    make install
+  args:
+    chdir: "{{ nvim_build_dir }}"
+  become: true
+  when: nvim_build_required
+
+# ----------------------------
+# Cleanup
+# ----------------------------
+- name: Cleanup Neovim source directory
+  file:
+    path: "{{ nvim_build_dir }}"
+    state: absent
+  become: true
+  when: nvim_build_required
+
+# ----------------------------
+# Final verification
+# ----------------------------
+- name: Verify installed Neovim version
+  command: "{{ nvim_binary_path }} --version"
+  register: nvim_final_version
+  changed_when: false
+
+- name: Debug installed Neovim version
+  debug:
+    msg: "Neovim installed version: {{ nvim_final_version.stdout_lines[0] }}"

@@ -1,0 +1,29 @@
+---
+# Neovim build variables
+nvim_repo_url: https://github.com/neovim/neovim.git
+nvim_github_api: https://api.github.com/repos/neovim/neovim/releases/latest
+
+# Where to build
+nvim_build_dir: /usr/local/src/neovim
+
+# Install prefix
+nvim_install_prefix: /usr/local
+
+# Binary path we expect after install
+nvim_binary_path: /usr/local/bin/nvim
+
+# Debian build dependencies
+nvim_build_dependencies:
+  - ninja-build
+  - gettext
+  - cmake
+  - unzip
+  - curl
+  - build-essential
+  - pkg-config
+  - libtool
+  - libtool-bin
+  - autoconf
+  - automake
+  - ca-certificates
+  - git

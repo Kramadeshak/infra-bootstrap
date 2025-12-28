@@ -21,3 +21,11 @@
     - zsh
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: Install nvim
+  hosts: all
+  gather_facts: true
+  roles:
+    - nvim
+  vars:
+    ansible_become_password: "{{ ansible_password }}"

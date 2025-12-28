@@ -1,0 +1,20 @@
+---
+- name: Install base packages (Fedora)
+  dnf:
+    name: "nvim"
+    state: present
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Install base packages on macOS
+  tags: [nvim, brew]
+  include_role:
+    name: homebrew
+  vars:
+    homebrew_packages: "nvim"
+  when: ansible_os_family == "Darwin"
+
+- name: Install base packages on Debian-based systems
+  import_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
