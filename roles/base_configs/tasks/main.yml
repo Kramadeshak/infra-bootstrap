@@ -1,0 +1,8 @@
+---
+- name: Configure Neovim
+  import_tasks: nvim.yml
+  tags: [nvim]
+
+- name: Configure tmux
+  import_tasks: tmux.yml
+  tags: [tmux]

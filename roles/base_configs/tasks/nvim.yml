@@ -1,0 +1,12 @@
+---
+- name: Ensure Neovim config directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.config/nvim"
+    state: directory
+    mode: "0755"
+
+- name: Copy Neovim init.lua
+  copy:
+    src: "{{ playbook_dir }}/../files/nvim/init.lua"
+    dest: "{{ ansible_env.HOME }}/.config/nvim/init.lua"
+    mode: "0644"

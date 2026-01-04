@@ -29,3 +29,9 @@
     - nvim
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: Install nvim
+  hosts: all
+  roles:
+    - base_configs
+
