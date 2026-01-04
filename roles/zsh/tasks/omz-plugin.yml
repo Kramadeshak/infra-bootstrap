@@ -19,7 +19,7 @@
 
 - name: Install Zsh plugin configuration
   copy:
-    src: zshrc.plugins.zsh
+    src: "{{ playbook_dir }}/../files/zsh/zshrc.plugins.zsh"
     dest: "/home/{{ ansible_env.SUDO_USER }}/.zshrc.plugins.zsh"
     mode: '0644'
 
