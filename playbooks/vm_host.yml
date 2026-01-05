@@ -9,3 +9,12 @@
         base_packages: "{{ vm_host_packages }}"
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: Ensure VM host prerequisites
+  hosts: vm_host
+  become: true
+  gather_facts: true
+  roles:
+    - vm_check
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
