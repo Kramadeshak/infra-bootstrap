@@ -18,3 +18,12 @@
     - vm_check
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: Ensure VM bridge network
+  hosts: vm_host
+  become: true
+  gather_facts: false
+  roles:
+    - vm_network
+  vars:
+    ansible_become_password: "{{ ansible_password }}"

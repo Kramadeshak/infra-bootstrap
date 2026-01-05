@@ -1,0 +1,24 @@
+---
+- name: Check if macvtap network exists
+  command: virsh net-info macvtap-net
+  register: net_check
+  failed_when: false
+  changed_when: false
+
+- name: Define macvtap network
+  template:
+    src: macvtap.xml.j2
+    dest: /etc/libvirt/qemu/networks/macvtap-net.xml
+  when: net_check.rc != 0
+
+- name: Define libvirt network
+  command: virsh net-define /etc/libvirt/qemu/networks/macvtap-net.xml
+  when: net_check.rc != 0
+
+- name: Autostart macvtap network
+  command: virsh net-autostart macvtap-net
+  when: net_check.rc != 0
+
+- name: Start macvtap network
+  command: virsh net-start macvtap-net
+  when: net_check.rc != 0
