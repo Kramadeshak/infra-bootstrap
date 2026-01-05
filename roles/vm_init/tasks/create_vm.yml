@@ -1,0 +1,32 @@
+---
+- name: Check if VM {{ vm.name }} exists
+  command: virsh dominfo {{ vm.name }}
+  register: vm_exists
+  failed_when: false
+  changed_when: false
+
+- name: Create VM via virt-install
+  command:
+    argv:
+      - virt-install
+      - --name
+      - "{{ vm.name }}"
+      - --memory
+      - "{{ vm.resources.memory_mb }}"
+      - --vcpus
+      - "{{ vm.resources.vcpus }}"
+      - --disk
+      - "size={{ vm.resources.disk_gb }},pool=default"
+      - --network
+      - type=direct,source={{ vm.network.interface }},source_mode=bridge,model=virtio
+      - --os-variant
+      - "{{ vm.os.variant }}"
+      - --graphics
+      - none
+      - --console
+      - pty,target_type=serial
+      - --import
+      - --noautoconsole
+  args:
+    creates: "/var/lib/libvirt/images/{{ vm.name }}.qcow2"
+  when: vm_exists.rc != 0

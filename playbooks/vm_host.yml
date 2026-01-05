@@ -27,3 +27,12 @@
     - vm_network
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: Initialize virtual machines
+  hosts: vm_host
+  become: true
+  gather_facts: true
+  roles:
+    - vm_init
+  vars:
+    ansible_become_password: "{{ ansible_password }}"

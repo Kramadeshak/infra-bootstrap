@@ -1,0 +1,23 @@
+---
+- name: Check if VM base image exists
+  stat:
+    path: "{{ vm_image.path }}"
+  register: vm_image_stat
+
+- name: Ensure VM base image exists
+  get_url:
+    url: "{{ vm_image.url }}"
+    dest: "{{ vm_image.path }}"
+    mode: '0644'
+    timeout: 120
+  register: image_download
+  retries: 5
+  delay: 20
+  until: image_download is succeeded
+  when: not vm_image_stat.stat.exists
+
+- name: Create VMs
+  include_tasks: create_vm.yml
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
