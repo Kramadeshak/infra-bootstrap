@@ -1,2 +1,5 @@
 - name: Bootstrap entrypoint
   import_playbook: common.yml
+
+- name: VM host playbook
+  import_playbook: vm_host.yml

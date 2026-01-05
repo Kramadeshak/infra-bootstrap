@@ -1,0 +1,78 @@
+---
+# ---------------------------------------------------------------------------
+# Base packages required on the VM host
+# ---------------------------------------------------------------------------
+vm_host_packages:
+  - qemu-kvm
+  - libvirt-daemon
+  - libvirt-daemon-kvm
+  - virt-install
+  - cloud-utils
+  - genisoimage
+
+# ---------------------------------------------------------------------------
+# Libvirt configuration
+# ---------------------------------------------------------------------------
+libvirt:
+  service_name: libvirtd
+  uri: qemu:///system
+  default_storage_pool: default
+
+# ---------------------------------------------------------------------------
+# Networking (bridged – VMs visible on LAN)
+# ---------------------------------------------------------------------------
+
+vm_network:
+  mode: macvtap
+
+  macvtap:
+    interface: wlo1
+    mode: bridge   # very important
+
+  subnet:
+    cidr: 192.168.1.0/24
+    gateway: 192.168.1.1
+    dns:
+      - 192.168.1.1
+      - 8.8.8.8
+
+# Base Fedora cloud image used for all VMs
+vm_image:
+  name: fedora-cloud-base
+  url: https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
+  path: /var/lib/libvirt/images/fedora-cloud-base.qcow2
+
+# Kubernetes VM nodes
+vm_nodes:
+  - name: k8s-node-1
+    hostname: k8s-node-1
+    resources:
+      vcpus: 4
+      memory_mb: 8192
+      disk_gb: 40
+    network:
+      interface: wlo1
+    os:
+      variant: fedora41
+
+  - name: k8s-node-2
+    hostname: k8s-node-2
+    resources:
+      vcpus: 4
+      memory_mb: 8192
+      disk_gb: 40
+    network:
+      interface: wlo1
+    os:
+      variant: fedora41
+
+  - name: k8s-node-3
+    hostname: k8s-node-3
+    resources:
+      vcpus: 4
+      memory_mb: 8192
+      disk_gb: 40
+    network:
+      interface: wlo1
+    os:
+      variant: fedora41
