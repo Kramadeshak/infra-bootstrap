@@ -1,0 +1,40 @@
+---
+- name: Destroy vm_nodes if running
+  command: virsh destroy {{ vm.name }}
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
+  failed_when: false
+  changed_when: false
+
+- name: Undefine vm_nodes
+  command: virsh undefine {{ vm.name }} --nvram
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
+  failed_when: false
+  changed_when: false
+
+- name: Remove VM disks
+  file:
+    path: "/var/lib/libvirt/images/{{ vm.name }}.qcow2"
+    state: absent
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
+
+- name: Remove VM cloud init disks
+  file:
+    path: "/var/lib/libvirt/images/{{ vm.name }}-seed.jso"
+    state: absent
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
+
+- name: Remove cloud-init ISOs
+  file:
+    path: "/var/lib/libvirt/images/{{ vm.name }}-seed.iso"
+    state: absent
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm

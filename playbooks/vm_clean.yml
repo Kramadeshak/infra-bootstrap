@@ -1,0 +1,9 @@
+---
+- name: Cleanup all VMs
+  hosts: vm_host
+  become: true
+  gather_facts: true
+  roles:
+    - vm_cleanup
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
