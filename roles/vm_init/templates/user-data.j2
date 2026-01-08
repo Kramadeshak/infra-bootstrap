@@ -1,0 +1,28 @@
+#cloud-config
+users:
+  - name: {{ vm.cloud_init.user }}
+    gecos: VM User
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: wheel
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: {{ vm.cloud_init.password_hash }}
+
+ssh_pwauth: true
+disable_root: true
+
+chpasswd:
+  expire: false
+
+hostname: {{ vm.hostname }}
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - vim
+  - curl
+  - git
+
+runcmd:
+  - echo "Cloud-init complete on {{ vm.name }}"

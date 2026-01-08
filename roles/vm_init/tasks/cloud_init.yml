@@ -1,0 +1,27 @@
+- name: Create cloud-init dir for {{ vm.name }}
+  file:
+    path: "/var/lib/libvirt/cloud-init/{{ vm.name }}"
+    state: directory
+    mode: '0755'
+
+- name: Render user-data
+  template:
+    src: user-data.j2
+    dest: "/var/lib/libvirt/cloud-init/{{ vm.name }}/user-data"
+
+- name: Render meta-data
+  template:
+    src: meta-data.j2
+    dest: "/var/lib/libvirt/cloud-init/{{ vm.name }}/meta-data"
+
+- name: Create cloud-init ISO
+  command: >
+    genisoimage
+    -output /var/lib/libvirt/images/{{ vm.name }}-seed.iso
+    -volid cidata
+    -joliet
+    -rock
+    user-data meta-data
+  args:
+    chdir: "/var/lib/libvirt/cloud-init/{{ vm.name }}"
+    creates: "/var/lib/libvirt/images/{{ vm.name }}-seed.iso"

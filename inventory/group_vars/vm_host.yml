@@ -42,6 +42,11 @@ vm_image:
   url: https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
   path: /var/lib/libvirt/images/fedora-cloud-base.qcow2
 
+# Cloud init related information
+cloud_init:
+  user: admin
+  password_hash: "$6$q7A0LUWF/OhleG5S$faYiimZD15rTzezoF3S8VRJlVhU6vOnV5o/iL6u02p8B3expAc3GpkDn2fOspTWTAqOKdibAifvCUwb8Qn4Ir/"
+
 # Kubernetes VM nodes
 vm_nodes:
   - name: k8s-node-1
@@ -54,6 +59,9 @@ vm_nodes:
       interface: wlo1
     os:
       variant: fedora41
+    cloud_init:
+      user: "{{ cloud_init.user }}"
+      password_hash: "{{ cloud_init.password_hash }}"
 
   - name: k8s-node-2
     hostname: k8s-node-2
@@ -65,6 +73,9 @@ vm_nodes:
       interface: wlo1
     os:
       variant: fedora41
+    cloud_init:
+      user: "{{ cloud_init.user }}"
+      password_hash: "{{ cloud_init.password_hash }}"
 
   - name: k8s-node-3
     hostname: k8s-node-3
@@ -76,3 +87,6 @@ vm_nodes:
       interface: wlo1
     os:
       variant: fedora41
+    cloud_init:
+      user: "{{ cloud_init.user }}"
+      password_hash: "{{ cloud_init.password_hash }}"
