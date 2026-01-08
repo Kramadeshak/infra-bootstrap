@@ -16,6 +16,12 @@
   until: image_download is succeeded
   when: not vm_image_stat.stat.exists
 
+- name: Prepare cloud-init for VMs
+  include_tasks: cloud_init.yml
+  loop: "{{ vm_nodes }}"
+  loop_control:
+    loop_var: vm
+
 - name: Create VMs
   include_tasks: create_vm.yml
   loop: "{{ vm_nodes }}"

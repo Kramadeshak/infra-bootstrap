@@ -5,6 +5,17 @@
   failed_when: false
   changed_when: false
 
+- name: Create VM disk from Fedora cloud image
+  command: >
+    qemu-img create
+    -f qcow2
+    -b {{ vm_image.path }}
+    -F qcow2
+    /var/lib/libvirt/images/{{ vm.name }}.qcow2
+  args:
+    creates: "/var/lib/libvirt/images/{{ vm.name }}.qcow2"
+  when: vm_exists.rc != 0
+
 - name: Create VM via virt-install
   command:
     argv:
@@ -16,7 +27,9 @@
       - --vcpus
       - "{{ vm.resources.vcpus }}"
       - --disk
-      - "size={{ vm.resources.disk_gb }},pool=default"
+      - "path=/var/lib/libvirt/images/{{ vm.name }}.qcow2,format=qcow2"
+      - --disk
+      - "path=/var/lib/libvirt/images/{{ vm.name }}-seed.iso,device=cdrom"
       - --network
       - type=direct,source={{ vm.network.interface }},source_mode=bridge,model=virtio
       - --os-variant
@@ -27,6 +40,4 @@
       - pty,target_type=serial
       - --import
       - --noautoconsole
-  args:
-    creates: "/var/lib/libvirt/images/{{ vm.name }}.qcow2"
   when: vm_exists.rc != 0
