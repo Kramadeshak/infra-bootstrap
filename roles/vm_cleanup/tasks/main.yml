@@ -38,3 +38,19 @@
   loop: "{{ vm_nodes }}"
   loop_control:
     loop_var: vm
+
+- name: Destroy libvirt networks
+  command: virsh net-destroy {{ net.name }}
+  loop: "{{ vm_networks }}"
+  loop_control:
+    loop_var: net
+  failed_when: false
+  changed_when: false
+
+- name: Undefine libvirt networks
+  command: virsh net-undefine {{ net.name }}
+  loop: "{{ vm_networks }}"
+  loop_control:
+    loop_var: net
+  failed_when: false
+  changed_when: false
