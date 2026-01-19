@@ -1,0 +1,16 @@
+- name: Install k3s master
+  hosts: k8s-master
+  become: yes
+  roles:
+    - k3s-master
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
+
+- name: Install k3s workers
+  hosts: k8s-worker
+  become: yes
+  vars:
+    k3s_token: "{{ hostvars[groups['k8s-master'][0]].k3s_token }}"
+    ansible_become_password: "{{ ansible_password }}"
+  roles:
+    - k3s-worker

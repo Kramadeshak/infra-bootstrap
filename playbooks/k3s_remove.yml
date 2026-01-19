@@ -1,0 +1,70 @@
+---
+- name: Remove k3s from worker nodes
+  hosts: k8s-worker
+  become: yes
+  tasks:
+    - name: Check if k3s-agent uninstall script exists
+      stat:
+        path: /usr/local/bin/k3s-agent-uninstall.sh
+      register: k3s_agent_uninstall
+
+    - name: Stop k3s-agent service if running
+      systemd:
+        name: k3s-agent
+        state: stopped
+      when: k3s_agent_uninstall.stat.exists
+      failed_when: false
+
+    - name: Uninstall k3s agent
+      command: /usr/local/bin/k3s-agent-uninstall.sh
+      when: k3s_agent_uninstall.stat.exists
+      changed_when: true
+
+    - name: Ensure k3s agent files are removed
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/rancher
+        - /var/lib/rancher
+        - /var/lib/kubelet
+        - /var/lib/cni
+        - /opt/cni
+      when: k3s_agent_uninstall.stat.exists
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
+
+- name: Remove k3s from master nodes
+  hosts: k8s-master
+  become: yes
+  tasks:
+    - name: Check if k3s server uninstall script exists
+      stat:
+        path: /usr/local/bin/k3s-uninstall.sh
+      register: k3s_server_uninstall
+
+    - name: Stop k3s service if running
+      systemd:
+        name: k3s
+        state: stopped
+      when: k3s_server_uninstall.stat.exists
+      failed_when: false
+
+    - name: Uninstall k3s server
+      command: /usr/local/bin/k3s-uninstall.sh
+      when: k3s_server_uninstall.stat.exists
+      changed_when: true
+
+    - name: Ensure k3s server files are removed
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/rancher
+        - /var/lib/rancher
+        - /var/lib/kubelet
+        - /var/lib/cni
+        - /opt/cni
+      when: k3s_server_uninstall.stat.exists
+  vars:
+    ansible_become_password: "{{ ansible_password }}"

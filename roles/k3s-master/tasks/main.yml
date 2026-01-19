@@ -1,0 +1,58 @@
+- name: Install k3s master if not already installed
+  shell: |
+    curl -sfL https://get.k3s.io | sh -s - server \
+      --node-ip={{ k3s_master_ip }} \
+      --advertise-address={{ ansible_host }}
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Ensure k3s service is running
+  systemd:
+    name: k3s
+    state: started
+    enabled: yes
+
+- name: Wait for kubeconfig to exist
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+
+- name: Slurp kubeconfig from master
+  slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: kubeconfig_raw
+
+- name: Ensure local artifacts directory exists
+  delegate_to: localhost
+  become: false
+  run_once: true
+  file:
+    path: "{{ playbook_dir }}/../artifacts"
+    state: directory
+    mode: "0755"
+
+- name: Write kubeconfig to artifacts
+  copy:
+    content: "{{ kubeconfig_raw.content | b64decode }}"
+    dest: "{{ playbook_dir }}/../artifacts/kubeconfig"
+    mode: "0600"
+  delegate_to: localhost
+  become: false
+  connection: local
+  run_once: true
+
+- name: Replace localhost with Wi-Fi IP in kubeconfig
+  delegate_to: localhost
+  become: false
+  replace:
+    path: "{{ playbook_dir }}/../artifacts/kubeconfig"
+    regexp: '127\.0\.0\.1'
+    replace: "{{ ansible_host }}"
+
+- name: Read k3s token
+  command: cat /var/lib/rancher/k3s/server/node-token
+  register: k3s_token_raw
+  changed_when: false
+
+- name: Set k3s token fact
+  set_fact:
+    k3s_token: "{{ k3s_token_raw.stdout }}"
