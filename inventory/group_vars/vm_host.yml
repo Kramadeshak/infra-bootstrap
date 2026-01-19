@@ -22,19 +22,33 @@ libvirt:
 # Networking (bridged – VMs visible on LAN)
 # ---------------------------------------------------------------------------
 
-vm_network:
-  mode: macvtap
+vm_networks:
+  - name: lan-bridge
+    type: bridge
+    bridge:
+      name: br-enp2s0
+      interface: enp2s0
+      ip: 10.10.10.1
+    dhcp: false
 
-  macvtap:
-    interface: wlo1
-    mode: bridge   # very important
+  - name: nat-internet
+    type: nat
+    forward_interface: wlo1
+    subnet:
+      cidr: 192.168.200.0/24
+      gateway: 192.168.200.1
+      netmask: 255.255.255.0
+      dhcp_range:
+        start: 192.168.200.100
+        end: 192.168.200.200
 
-  subnet:
-    cidr: 192.168.1.0/24
-    gateway: 192.168.1.1
-    dns:
-      - 192.168.1.1
-      - 8.8.8.8
+lan_network:
+  interface: enp2s0
+  subnet: 10.10.10.0/24
+  gateway: 10.10.10.1
+  dns:
+    - 10.10.10.2
+    - 8.8.8.8
 
 # Base Fedora cloud image used for all VMs
 vm_image:
@@ -55,10 +69,9 @@ vm_nodes:
       vcpus: 4
       memory_mb: 8192
       disk_gb: 40
-    network:
-      interface: wlo1
     os:
       variant: fedora41
+    lan_ip: 10.10.10.11
     cloud_init:
       user: "{{ cloud_init.user }}"
       password_hash: "{{ cloud_init.password_hash }}"
@@ -69,10 +82,9 @@ vm_nodes:
       vcpus: 4
       memory_mb: 8192
       disk_gb: 40
-    network:
-      interface: wlo1
     os:
       variant: fedora41
+    lan_ip: 10.10.10.12
     cloud_init:
       user: "{{ cloud_init.user }}"
       password_hash: "{{ cloud_init.password_hash }}"
@@ -83,10 +95,9 @@ vm_nodes:
       vcpus: 4
       memory_mb: 8192
       disk_gb: 40
-    network:
-      interface: wlo1
     os:
       variant: fedora41
+    lan_ip: 10.10.10.13
     cloud_init:
       user: "{{ cloud_init.user }}"
       password_hash: "{{ cloud_init.password_hash }}"

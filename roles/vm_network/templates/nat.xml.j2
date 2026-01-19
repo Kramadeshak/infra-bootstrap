@@ -1,0 +1,17 @@
+<network>
+  <name>{{ network.name }}</name>
+
+  <forward mode="nat">
+    <interface dev="{{ network.forward_interface }}"/>
+  </forward>
+
+  <bridge name="virbr200"/>
+
+  <ip address="{{ network.subnet.gateway }}"
+      netmask="{{ network.subnet.netmask }}">
+    <dhcp>
+      <range start="{{ network.subnet.dhcp_range.start }}"
+             end="{{ network.subnet.dhcp_range.end }}"/>
+    </dhcp>
+  </ip>
+</network>

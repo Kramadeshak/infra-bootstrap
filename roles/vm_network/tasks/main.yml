@@ -1,24 +1,72 @@
----
-- name: Check if macvtap network exists
-  command: virsh net-info macvtap-net
-  register: net_check
-  failed_when: false
+- name: Gather existing network links
+  command: ip -o link show
+  register: ip_links
   changed_when: false
 
-- name: Define macvtap network
+- name: Gather existing IP addresses
+  command: ip -o addr show
+  register: ip_addrs
+  changed_when: false
+
+- name: Gather libvirt networks
+  command: virsh net-list --all
+  register: virsh_nets
+  changed_when: false
+
+- name: Create bridge if missing
+  command: ip link add name {{ item.bridge.name }} type bridge
+  when:
+    - item.type == "bridge"
+    - item.bridge.name not in ip_links.stdout
+  loop: "{{ vm_networks }}"
+
+- name: Bring bridge UP
+  command: ip link set dev {{ item.bridge.name }} up
+  when:
+    - item.type == "bridge"
+    - item.bridge.name in ip_links.stdout
+  loop: "{{ vm_networks }}"
+
+- name: Attach physical interface to bridge if not already attached
+  command: ip link set dev {{ item.bridge.interface }} master {{ item.bridge.name }}
+  when:
+    - item.type == "bridge"
+    - "'master {{ item.bridge.name }}' not in ip_links.stdout"
+  loop: "{{ vm_networks }}"
+
+- name: Assign IP to bridge if missing
+  command: ip addr add {{ item.bridge.ip }}/{{ item.bridge.cidr }} dev {{ item.bridge.name }}
+  when:
+    - item.type == "bridge"
+    - item.bridge.ip not in ip_addrs.stdout
+  loop: "{{ vm_networks }}"
+
+- name: Generate bridge network XML
   template:
-    src: macvtap.xml.j2
-    dest: /etc/libvirt/qemu/networks/macvtap-net.xml
-  when: net_check.rc != 0
+    src: bridge.xml.j2
+    dest: /etc/libvirt/qemu/networks/{{ item.name }}.xml
+  when: item.type == "bridge"
+  loop: "{{ vm_networks }}"
+  vars:
+    network: "{{ item }}"
 
-- name: Define libvirt network
-  command: virsh net-define /etc/libvirt/qemu/networks/macvtap-net.xml
-  when: net_check.rc != 0
+- name: Generate NAT network XML
+  template:
+    src: nat.xml.j2
+    dest: /etc/libvirt/qemu/networks/{{ item.name }}.xml
+  when: item.type == "nat"
+  loop: "{{ vm_networks }}"
+  vars:
+    network: "{{ item }}"
 
-- name: Autostart macvtap network
-  command: virsh net-autostart macvtap-net
-  when: net_check.rc != 0
+- name: Define libvirt network if missing
+  command: virsh net-define /etc/libvirt/qemu/networks/{{ item.name }}.xml
+  loop: "{{ vm_networks }}"
 
-- name: Start macvtap network
-  command: virsh net-start macvtap-net
-  when: net_check.rc != 0
+- name: Autostart libvirt network
+  command: virsh net-autostart {{ item.name }}
+  loop: "{{ vm_networks }}"
+
+- name: Start libvirt network if inactive
+  command: virsh net-start {{ item.name }}
+  loop: "{{ vm_networks }}"

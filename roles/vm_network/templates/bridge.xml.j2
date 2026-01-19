@@ -1,0 +1,17 @@
+<network>
+  <name>{{ network.name }}</name>
+
+  <forward mode="bridge"/>
+
+  <bridge name="{{ network.bridge.name }}"/>
+
+  {% if network.dhcp | default(false) %}
+  <ip address="{{ network.subnet.gateway }}"
+      netmask="{{ network.subnet.netmask }}">
+    <dhcp>
+      <range start="{{ network.subnet.dhcp_range.start }}"
+             end="{{ network.subnet.dhcp_range.end }}"/>
+    </dhcp>
+  </ip>
+  {% endif %}
+</network>
