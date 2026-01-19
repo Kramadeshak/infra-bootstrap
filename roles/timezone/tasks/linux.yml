@@ -1,4 +1,10 @@
 ---
+- name: Set /etc/timezone if present (Debian-based)
+  dnf:
+    name: cronie
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: Ensure /etc/localtime is set correctly
   file:
     src: "/usr/share/zoneinfo/{{ timezone }}"
