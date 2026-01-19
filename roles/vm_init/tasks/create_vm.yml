@@ -31,7 +31,9 @@
       - --disk
       - "path=/var/lib/libvirt/images/{{ vm.name }}-seed.iso,device=cdrom"
       - --network
-      - type=direct,source={{ vm.network.interface }},source_mode=bridge,model=virtio
+      - type=bridge,source={{ vm_networks | selectattr('type','equalto','bridge') | map(attribute='bridge.name') | list | first }},model=virtio
+      - --network
+      - type=network,source={{ vm_networks | selectattr('type','equalto','nat') | map(attribute='name') | list | first }},model=virtio
       - --os-variant
       - "{{ vm.os.variant }}"
       - --graphics

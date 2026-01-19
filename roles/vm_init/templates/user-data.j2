@@ -25,4 +25,8 @@ packages:
   - git
 
 runcmd:
+  - nmcli connection add type ethernet ifname eth0 con-name eth0-static ipv4.addresses {{ vm.lan_ip }}/24 ipv4.gateway {{ lan_network.gateway }} ipv4.dns "{{ lan_network.dns | join(' ') }}" ipv4.method manual autoconnect yes
+  - nmcli connection modify eth1 ipv4.method auto autoconnect yes
+  - nmcli connection up eth0-static
+  - systemctl start sshd
   - echo "Cloud-init complete on {{ vm.name }}"
