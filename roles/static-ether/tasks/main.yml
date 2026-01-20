@@ -1,0 +1,31 @@
+- name: Validate ethernet IP is defined
+  assert:
+    that:
+      - k3s_master_ip is defined
+      - eth_prefix is defined
+    fail_msg: "Ethernet IP configuration missing"
+
+- name: Ensure dhcpcd is installed
+  package:
+    name: dhcpcd
+    state: present
+
+- name: Configure static IP for ethernet interface
+  blockinfile:
+    path: /etc/dhcpcd.conf
+    marker: "# {mark} ANSIBLE MANAGED ETH0"
+    block: |
+      interface {{ eth_interface }}
+      static ip_address={{ k3s_master_ip }}/{{ eth_prefix }}
+      nogateway
+  notify: Restart dhcpcd
+
+- name: Ensure ethernet interface is up
+  command: ip link set {{ eth_interface }} up
+  changed_when: false
+
+- name: Verify ethernet IP is assigned
+  command: ip -4 addr show {{ eth_interface }}
+  register: eth_ip_check
+  changed_when: false
+  failed_when: k3s_master_ip not in eth_ip_check.stdout

@@ -29,6 +29,7 @@ vm_networks:
       name: br-enp2s0
       interface: enp2s0
       ip: 10.10.10.1
+      cidr: 24
     dhcp: false
 
   - name: nat-internet

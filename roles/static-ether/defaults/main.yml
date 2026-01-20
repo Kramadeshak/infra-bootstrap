@@ -1,0 +1,2 @@
+eth_interface: eth0
+eth_prefix: 24
