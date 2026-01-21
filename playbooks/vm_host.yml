@@ -19,7 +19,7 @@
   vars:
     ansible_become_password: "{{ ansible_password }}"
 
-- name: Ensure VM bridge network
+- name: Ensure VM NAT network
   hosts: vm_host
   become: true
   gather_facts: false
