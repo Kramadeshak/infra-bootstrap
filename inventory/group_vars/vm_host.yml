@@ -19,86 +19,30 @@ libvirt:
   default_storage_pool: default
 
 # ---------------------------------------------------------------------------
-# Networking (bridged – VMs visible on LAN)
+# Networking
 # ---------------------------------------------------------------------------
 
-vm_networks:
-  - name: lan-bridge
-    type: bridge
-    bridge:
-      name: br-enp2s0
-      interface: enp2s0
-      ip: 10.10.10.1
-      cidr: 24
-    dhcp: false
-
-  - name: nat-internet
-    type: nat
-    forward_interface: wlo1
-    subnet:
-      cidr: 192.168.200.0/24
-      gateway: 192.168.200.1
-      netmask: 255.255.255.0
-      dhcp_range:
-        start: 192.168.200.100
-        end: 192.168.200.200
-
-lan_network:
-  interface: enp2s0
-  subnet: 10.10.10.0/24
-  gateway: 10.10.10.1
-  dns:
-    - 10.10.10.2
-    - 8.8.8.8
+vm_network:
+  name: nat
+  forward_interface: wlo1
+  subnet:
+    cidr: 192.168.200.0/24
+    gateway: 192.168.200.1
+    netmask: 255.255.255.0
+    dhcp_range:
+      start: 192.168.200.100
+      end: 192.168.200.200
 
 # Base Fedora cloud image used for all VMs
-vm_image:
-  name: fedora-cloud-base
+vm_os:
+  image_name: fedora-cloud-base
+  variant: fedora41
   url: https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
   path: /var/lib/libvirt/images/fedora-cloud-base.qcow2
 
-# Cloud init related information
-cloud_init:
-  user: admin
-  password_hash: "$6$q7A0LUWF/OhleG5S$faYiimZD15rTzezoF3S8VRJlVhU6vOnV5o/iL6u02p8B3expAc3GpkDn2fOspTWTAqOKdibAifvCUwb8Qn4Ir/"
+cloud_init_password_hash: "$6$q7A0LUWF/OhleG5S$faYiimZD15rTzezoF3S8VRJlVhU6vOnV5o/iL6u02p8B3expAc3GpkDn2fOspTWTAqOKdibAifvCUwb8Qn4Ir/"
 
-# Kubernetes VM nodes
-vm_nodes:
-  - name: k8s-node-1
-    hostname: k8s-node-1
-    resources:
-      vcpus: 4
-      memory_mb: 8192
-      disk_gb: 40
-    os:
-      variant: fedora41
-    lan_ip: 10.10.10.11
-    cloud_init:
-      user: "{{ cloud_init.user }}"
-      password_hash: "{{ cloud_init.password_hash }}"
-
-  - name: k8s-node-2
-    hostname: k8s-node-2
-    resources:
-      vcpus: 4
-      memory_mb: 8192
-      disk_gb: 40
-    os:
-      variant: fedora41
-    lan_ip: 10.10.10.12
-    cloud_init:
-      user: "{{ cloud_init.user }}"
-      password_hash: "{{ cloud_init.password_hash }}"
-
-  - name: k8s-node-3
-    hostname: k8s-node-3
-    resources:
-      vcpus: 4
-      memory_mb: 8192
-      disk_gb: 40
-    os:
-      variant: fedora41
-    lan_ip: 10.10.10.13
-    cloud_init:
-      user: "{{ cloud_init.user }}"
-      password_hash: "{{ cloud_init.password_hash }}"
+vm_resources:
+  vcpus: 4
+  memory_mb: 8192
+  disk_gb: 40
