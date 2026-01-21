@@ -1,4 +1,22 @@
 ---
+- name: Build vm_nodes from k8s inventory
+  set_fact:
+    vm_nodes: "{{ vm_nodes | default([]) + [vm_def] }}"
+  vars:
+    host: "{{ item }}"
+    hv: "{{ hostvars[item] }}"
+    vm_def:
+      name: "{{ host }}"
+      hostname: "{{ host }}"
+      ip: "{{ hv.ansible_host }}"
+      resources: "{{ hv.vm_resources | default(vm_resources) }}"
+      os:
+        variant: "{{ vm_os.variant }}"
+      cloud_init:
+        user: "{{ hv.ansible_user }}"
+        password_hash: "{{ cloud_init_password_hash }}"
+  loop: "{{ groups['k8s'] }}"
+
 - name: Destroy vm_nodes if running
   command: virsh destroy {{ vm.name }}
   loop: "{{ vm_nodes }}"
@@ -40,17 +58,11 @@
     loop_var: vm
 
 - name: Destroy libvirt networks
-  command: virsh net-destroy {{ net.name }}
-  loop: "{{ vm_networks }}"
-  loop_control:
-    loop_var: net
+  command: virsh net-destroy {{ vm_network.name }}
   failed_when: false
   changed_when: false
 
 - name: Undefine libvirt networks
-  command: virsh net-undefine {{ net.name }}
-  loop: "{{ vm_networks }}"
-  loop_control:
-    loop_var: net
+  command: virsh net-undefine {{ vm_network.name }}
   failed_when: false
   changed_when: false
