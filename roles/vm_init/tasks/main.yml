@@ -1,13 +1,13 @@
 ---
 - name: Check if VM base image exists
   stat:
-    path: "{{ vm_image.path }}"
+    path: "{{ vm_os.path }}"
   register: vm_image_stat
 
 - name: Ensure VM base image exists
   get_url:
-    url: "{{ vm_image.url }}"
-    dest: "{{ vm_image.path }}"
+    url: "{{ vm_os.url }}"
+    dest: "{{ vm_os.path }}"
     mode: '0644'
     timeout: 120
   register: image_download
@@ -15,6 +15,24 @@
   delay: 20
   until: image_download is succeeded
   when: not vm_image_stat.stat.exists
+
+- name: Build vm_nodes from k8s inventory
+  set_fact:
+    vm_nodes: "{{ vm_nodes | default([]) + [vm_def] }}"
+  vars:
+    host: "{{ item }}"
+    hv: "{{ hostvars[item] }}"
+    vm_def:
+      name: "{{ host }}"
+      hostname: "{{ host }}"
+      ip: "{{ hv.ansible_host }}"
+      resources: "{{ hv.vm_resources | default(vm_resources) }}"
+      os:
+        variant: "{{ vm_os.variant }}"
+      cloud_init:
+        user: "{{ hv.ansible_user }}"
+        password_hash: "{{ cloud_init_password_hash }}"
+  loop: "{{ groups['k8s'] }}"
 
 - name: Prepare cloud-init for VMs
   include_tasks: cloud_init.yml

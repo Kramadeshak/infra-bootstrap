@@ -9,7 +9,7 @@
   command: >
     qemu-img create
     -f qcow2
-    -b {{ vm_image.path }}
+    -b {{ vm_os.path }}
     -F qcow2
     /var/lib/libvirt/images/{{ vm.name }}.qcow2
   args:
@@ -31,9 +31,7 @@
       - --disk
       - "path=/var/lib/libvirt/images/{{ vm.name }}-seed.iso,device=cdrom"
       - --network
-      - type=bridge,source={{ vm_networks | selectattr('type','equalto','bridge') | map(attribute='bridge.name') | list | first }},model=virtio
-      - --network
-      - type=network,source={{ vm_networks | selectattr('type','equalto','nat') | map(attribute='name') | list | first }},model=virtio
+      - type=network,source={{ vm_network.name }},model=virtio
       - --os-variant
       - "{{ vm.os.variant }}"
       - --graphics
