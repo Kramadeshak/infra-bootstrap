@@ -1,8 +1,8 @@
-- name: Configure ethernet cluster network
-  hosts: k8s-master
-  become: true
-  roles:
-    - static-ether
+# - name: Configure ethernet cluster network
+#   hosts: k8s-master
+#   become: true
+#   roles:
+#     - static-ether
 
 - name: Install k3s master
   hosts: k8s-master

@@ -1,8 +1,6 @@
 - name: Install k3s master if not already installed
   shell: |
-    curl -sfL https://get.k3s.io | sh -s - server \
-      --node-ip={{ k3s_master_ip }} \
-      --advertise-address={{ ansible_host }}
+    curl -sfL https://get.k3s.io | sh -s -
   args:
     creates: /usr/local/bin/k3s
 

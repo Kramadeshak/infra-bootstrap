@@ -13,4 +13,3 @@ default_shell: zsh
 default_editor: nvim
 default_font: jetbrains_mono
 
-k3s_master_ip: 10.10.10.2
