@@ -1,0 +1,67 @@
+---
+- name: Install podman
+  package:
+    name: podman
+    state: present
+
+- name: Ensure nginx config directory exists
+  file:
+    path: /tmp/nginx
+    state: directory
+    mode: '0755'
+
+- name: Ensure k3s_master_ip is defined
+  assert:
+    that:
+      - k3s_master_ip is defined
+    fail_msg: "k3s_master_ip must be defined (inventory, group_vars, or play vars)"
+
+- name: Render nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: /tmp/nginx/nginx.conf
+    mode: '0644'
+  vars:
+    master_ip: "{{ k3s_master_ip }}"
+  register: nginx_conf
+
+- name: Allow containers to bind to any port (SELinux)
+  command: setsebool -P container_connect_any 1
+  changed_when: false
+
+- name: Pull nginx image
+  command: podman pull nginx:latest
+  register: pull_result
+  changed_when: "'up to date' not in pull_result.stdout | lower"
+
+- name: Check if nginx container exists
+  command: podman container exists nginx-proxy
+  register: nginx_exists
+  failed_when: false
+  changed_when: false
+
+- name: Stop nginx container if config changed
+  command: podman stop nginx-proxy
+  when:
+    - nginx_exists.rc == 0
+    - nginx_conf.changed
+
+- name: Remove nginx container if config changed
+  command: podman rm nginx-proxy
+  when:
+    - nginx_exists.rc == 0
+    - nginx_conf.changed
+
+- name: Run nginx container
+  command: >
+    podman run -d
+    --name nginx-proxy
+    --restart=always
+    --network host
+    -p 6443:6443
+    -p 3000:80
+    -v /tmp/nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
+    nginx:latest
+  register: nginx_exists
+  when: nginx_exists.rc != 0 or nginx_conf.changed
+

@@ -1,9 +1,3 @@
-# - name: Configure ethernet cluster network
-#   hosts: k8s-master
-#   become: true
-#   roles:
-#     - static-ether
-
 - name: Install k3s master
   hosts: k8s-master
   become: yes
@@ -11,12 +5,23 @@
     - k3s-master
   vars:
     ansible_become_password: "{{ ansible_password }}"
+    k3s_proxy_ip: "{{ hostvars[groups['vm_host'][0]].ansible_host }}"
 
 - name: Install k3s workers
   hosts: k8s-worker
   become: yes
   vars:
     k3s_token: "{{ hostvars[groups['k8s-master'][0]].k3s_token }}"
+    k3s_master_ip: "{{ hostvars[groups['k8s-master'][0]].ansible_host }}"
     ansible_become_password: "{{ ansible_password }}"
   roles:
     - k3s-worker
+
+- name: Deploy proxy for access
+  hosts: vm_host
+  become: yes
+  vars:
+    k3s_master_ip: "{{ hostvars[groups['k8s-master'][0]].ansible_host }}"
+    ansible_become_password: "{{ ansible_password }}"
+  roles:
+    - vm_proxy
