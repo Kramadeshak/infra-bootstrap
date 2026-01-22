@@ -25,6 +25,7 @@
         path: "{{ item }}"
         state: absent
       loop:
+        - /usr/local/bin/k3s
         - /etc/rancher
         - /var/lib/rancher
         - /var/lib/kubelet
@@ -60,6 +61,8 @@
         path: "{{ item }}"
         state: absent
       loop:
+        - /usr/local/bin/k3s
+        - /etc/rancher/k3s/k3s.yaml
         - /etc/rancher
         - /var/lib/rancher
         - /var/lib/kubelet
@@ -68,3 +71,7 @@
       when: k3s_server_uninstall.stat.exists
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: VM proxy delete
+  import_playbook: vm_proxy_delete.yml
+

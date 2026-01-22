@@ -1,0 +1,41 @@
+---
+- name: Remove nginx proxy container and configuration
+  hosts: vm_host
+  become: yes
+  tasks:
+    - name: Check if nginx-proxy container exists
+      command: podman container exists nginx-proxy
+      register: nginx_container_exists
+      failed_when: false
+      changed_when: false
+
+    - name: Stop nginx-proxy container if running
+      command: podman stop nginx-proxy
+      when: nginx_container_exists.rc == 0
+      failed_when: false
+
+    - name: Remove nginx-proxy container
+      command: podman rm nginx-proxy
+      when: nginx_container_exists.rc == 0
+      changed_when: true
+
+    - name: Remove nginx configuration file
+      file:
+        path: /tmp/nginx/nginx.conf
+        state: absent
+
+    - name: Check if /tmp/nginx directory exists
+      stat:
+        path: /tmp/nginx
+      register: nginx_dir
+
+    - name: Remove /tmp/nginx directory if empty
+      file:
+        path: /tmp/nginx
+        state: absent
+      when:
+        - nginx_dir.stat.exists
+        - nginx_dir.stat.isdir
+        - nginx_dir.stat.size == 0
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
