@@ -7,3 +7,6 @@
     - vm_cleanup
   vars:
     ansible_become_password: "{{ ansible_password }}"
+
+- name: VM proxy delete
+  import_playbook: vm_proxy_delete.yml
