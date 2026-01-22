@@ -12,6 +12,11 @@
     <dhcp>
       <range start="{{ network.subnet.dhcp_range.start }}"
              end="{{ network.subnet.dhcp_range.end }}"/>
+      {% for vm in nodes %}
+      <host mac="{{ vm.mac }}"
+            name="{{ vm.name }}"
+            ip="{{ vm.ip }}"/>
+      {% endfor %}
     </dhcp>
   </ip>
 </network>

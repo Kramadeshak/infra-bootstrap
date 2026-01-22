@@ -1,7 +1,14 @@
-- name: Gather libvirt networks
-  command: virsh net-list --all
-  register: virsh_nets
-  changed_when: false
+- name: Build vm_nodes from k8s inventory
+  set_fact:
+    nodes: "{{ nodes | default([]) + [vm_def] }}"
+  vars:
+    host: "{{ item }}"
+    hv: "{{ hostvars[item] }}"
+    vm_def:
+      name: "{{ host }}"
+      ip: "{{ hv.ansible_host }}"
+      mac: "{{ hv.mac }}"
+  loop: "{{ groups['k8s'] }}"
 
 - name: Generate NAT network XML
   template:
@@ -9,12 +16,35 @@
     dest: /etc/libvirt/qemu/networks/{{ vm_network.name }}.xml
   vars:
     network: "{{ vm_network }}"
+    nodes: "{{ nodes }}"
+
+- name: Gather libvirt networks
+  command: virsh net-list --all
+  register: virsh_nets
+  changed_when: false
+
+- name: Check if libvirt network exists
+  set_fact:
+    network_exists: "{{ vm_network.name in virsh_nets.stdout }}"
 
 - name: Define libvirt network if missing
   command: virsh net-define /etc/libvirt/qemu/networks/{{ vm_network.name }}.xml
+  when: not network_exists
 
-- name: Autostart libvirt network
+- name: Check if network autostart is enabled
+  command: virsh net-info {{ vm_network.name }}
+  register: net_info
+  changed_when: false
+
+- name: Enable libvirt network autostart if disabled
   command: virsh net-autostart {{ vm_network.name }}
+  when: "'Autostart: yes' not in net_info.stdout"
+
+- name: Check if libvirt network is active
+  command: virsh net-info {{ vm_network.name }}
+  register: net_state
+  changed_when: false
 
 - name: Start libvirt network if inactive
   command: virsh net-start {{ vm_network.name }}
+  when: "'Active: yes' not in net_state.stdout"
