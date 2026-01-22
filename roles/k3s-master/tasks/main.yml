@@ -44,7 +44,7 @@
   replace:
     path: "{{ playbook_dir }}/../artifacts/kubeconfig"
     regexp: '127\.0\.0\.1'
-    replace: "{{ ansible_host }}"
+    replace: "{{ k3s_proxy_ip }}"
 
 - name: Read k3s token
   command: cat /var/lib/rancher/k3s/server/node-token
