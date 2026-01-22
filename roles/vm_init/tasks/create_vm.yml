@@ -31,7 +31,7 @@
       - --disk
       - "path=/var/lib/libvirt/images/{{ vm.name }}-seed.iso,device=cdrom"
       - --network
-      - type=network,source={{ vm_network.name }},model=virtio
+      - type=network,source={{ vm_network.name }},model=virtio,mac={{ vm.mac }}
       - --os-variant
       - "{{ vm.os.variant }}"
       - --graphics

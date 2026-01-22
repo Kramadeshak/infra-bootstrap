@@ -26,7 +26,8 @@
       name: "{{ host }}"
       hostname: "{{ host }}"
       ip: "{{ hv.ansible_host }}"
-      resources: "{{ hv.vm_resources | default(vm_resources) }}"
+      mac: "{{ hv.mac }}"
+      resources: "{{ vm_resources }}"
       os:
         variant: "{{ vm_os.variant }}"
       cloud_init:
