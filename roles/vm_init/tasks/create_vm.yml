@@ -16,6 +16,11 @@
     creates: "/var/lib/libvirt/images/{{ vm.name }}.qcow2"
   when: vm_exists.rc != 0
 
+- name: Resize VM disk from Fedora cloud image
+  shell:
+    qemu-img resize /var/lib/libvirt/images/{{ vm.name }}.qcow2 {{ vm.resources.disk_gb }}G
+  when: vm_exists.rc != 0
+
 - name: Create VM via virt-install
   command:
     argv:

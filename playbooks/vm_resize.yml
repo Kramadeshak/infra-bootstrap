@@ -1,0 +1,56 @@
+---
+- name: Resize root disk inside VM
+  hosts: k8s
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ensure growpart is installed
+      dnf:
+        name: cloud-utils-growpart
+        state: present
+
+    - name: Detect root device
+      command: findmnt -n -o SOURCE /
+      register: root_source
+      changed_when: false
+
+    - name: Set root disk and partition facts
+      set_fact:
+        root_partition: "{{ root_source.stdout }}"
+        root_disk: "{{ root_source.stdout | regex_replace('[0-9]+$', '') }}"
+        root_part_number: "{{ root_source.stdout | regex_search('[0-9]+$') }}"
+
+    - name: Debug detected layout
+      debug:
+        msg:
+          - "Root partition: {{ root_partition }}"
+          - "Root disk: {{ root_disk }}"
+          - "Partition number: {{ root_part_number }}"
+
+    - name: Grow root partition
+      command: growpart {{ root_disk }} {{ root_part_number }}
+      register: growpart_result
+      failed_when: false
+      changed_when: "'CHANGED' in growpart_result.stdout"
+
+    - name: Get filesystem type of root
+      set_fact:
+        root_fstype: "{{ ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='fstype') | first }}"
+
+    - name: Resize XFS filesystem
+      command: xfs_growfs /
+      when: root_fstype == "xfs"
+
+    - name: Resize ext4 filesystem
+      command: resize2fs {{ root_partition }}
+      when: root_fstype == "ext4"
+
+    - name: Verify new disk size
+      command: df -h /
+      register: df_output
+      changed_when: false
+
+    - name: Show final disk usage
+      debug:
+        var: df_output.stdout_lines

@@ -1,0 +1,131 @@
+---
+- name: Convert macOS into headless LLM node (llama.cpp optimized)
+  hosts: macmini
+  connection: local
+  gather_facts: false
+
+  vars:
+    user_agents:
+      - com.apple.Siri.agent
+      - com.apple.assistantd
+      - com.apple.photoanalysisd
+      - com.apple.mediaanalysisd
+      - com.apple.cloudphotod
+      - com.apple.AMPArtworkAgent
+      - com.apple.parsecd
+      - com.apple.suggestd
+
+    system_daemons_safe:
+      - com.apple.metadata.mds
+      - com.apple.metadata.mds_stores
+
+    processes:
+      - Siri
+      - photoanalysisd
+      - mediaanalysisd
+      - mds
+      - mdworker
+      - suggestd
+
+  tasks:
+
+    - name: Get current user ID
+      command: id -u
+      register: user_id
+      changed_when: false
+
+    # -----------------------------
+    # Disable UI-heavy user agents
+    # -----------------------------
+    - name: Disable user launch agents
+      shell: |
+        launchctl bootout gui/{{ user_id.stdout }}/{{ item }} 2>/dev/null || true
+        launchctl disable gui/{{ user_id.stdout }}/{{ item }} 2>/dev/null || true
+      loop: "{{ user_agents }}"
+      changed_when: false
+
+    # -----------------------------
+    # Disable Spotlight indexing
+    # -----------------------------
+    - name: Disable Spotlight indexing (major CPU saver)
+      become: true
+      command: mdutil -a -i off
+      changed_when: false
+
+    - name: Unload Spotlight services
+      become: true
+      shell: |
+        launchctl bootout system/{{ item }} 2>/dev/null || true
+        launchctl disable system/{{ item }} 2>/dev/null || true
+      loop: "{{ system_daemons_safe }}"
+      changed_when: false
+
+    # -----------------------------
+    # Disable Siri & analytics
+    # -----------------------------
+    - name: Disable Siri globally
+      command: defaults write com.apple.Siri StatusMenuVisible -bool false
+
+    - name: Disable Siri assistant
+      command: defaults write com.apple.assistant.support "Assistant Enabled" -bool false
+
+    - name: Disable analytics & telemetry
+      become: true
+      shell: |
+        defaults write /Library/Application\ Support/CrashReporter/DiagnosticMessagesHistory.plist AutoSubmit -bool false || true
+        defaults write /Library/Application\ Support/CrashReporter/DiagnosticMessagesHistory.plist ThirdPartyDataSubmit -bool false || true
+      changed_when: false
+
+    # -----------------------------
+    # Disable iCloud background sync (partial)
+    # -----------------------------
+    - name: Disable iCloud documents sync
+      command: defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+
+    # -----------------------------
+    # Kill background hogs
+    # -----------------------------
+    - name: Kill unnecessary processes
+      shell: pkill -f "{{ item }}" 2>/dev/null || true
+      loop: "{{ processes }}"
+      changed_when: false
+
+    # -----------------------------
+    # Power tuning (prevent sleep)
+    # -----------------------------
+    - name: Disable sleep (critical for remote node)
+      become: true
+      command: systemsetup -setcomputersleep Never
+
+    - name: Disable disk sleep
+      become: true
+      command: systemsetup -setharddisksleep Never
+
+    - name: Disable display sleep (headless stability)
+      become: true
+      command: systemsetup -setdisplaysleep Never
+
+    # -----------------------------
+    # Max performance mode (Apple Silicon)
+    # -----------------------------
+    - name: Set high performance power mode (if supported)
+      become: true
+      shell: pmset -a powermode 2 || true
+      changed_when: false
+
+    # -----------------------------
+    # Disable Time Machine (huge IO saver)
+    # -----------------------------
+    - name: Disable Time Machine
+      become: true
+      command: tmutil disable
+      ignore_errors: true
+
+    # -----------------------------
+    # Memory pressure reduction
+    # -----------------------------
+    - name: Reduce file caching pressure
+      become: true
+      shell: |
+        sysctl -w vm.compressor_mode=2 || true
+      changed_when: false

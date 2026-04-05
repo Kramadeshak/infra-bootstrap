@@ -17,11 +17,11 @@
   roles:
     - k3s-worker
 
-- name: Deploy proxy for access
-  hosts: vm_host
-  become: yes
-  vars:
-    k3s_master_ip: "{{ hostvars[groups['k8s-master'][0]].ansible_host }}"
-    ansible_become_password: "{{ ansible_password }}"
-  roles:
-    - vm_proxy
+# - name: Deploy proxy for access
+#   hosts: vm_host
+#   become: yes
+#   vars:
+#     k3s_master_ip: "{{ hostvars[groups['k8s-master'][0]].ansible_host }}"
+#     ansible_become_password: "{{ ansible_password }}"
+#   roles:
+#     - vm_proxy
