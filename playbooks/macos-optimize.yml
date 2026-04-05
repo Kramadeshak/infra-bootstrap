@@ -1,8 +1,8 @@
 ---
 - name: Convert macOS into headless LLM node (llama.cpp optimized)
   hosts: macmini
-  connection: local
-  gather_facts: false
+  gather_facts: true
+  become: true
 
   vars:
     user_agents:
@@ -27,8 +27,9 @@
       - mdworker
       - suggestd
 
-  tasks:
+    ansible_become_password: "{{ ansible_password }}"
 
+  tasks:
     - name: Get current user ID
       command: id -u
       register: user_id
@@ -47,9 +48,30 @@
     # -----------------------------
     # Disable Spotlight indexing
     # -----------------------------
-    - name: Disable Spotlight indexing (major CPU saver)
+    - name: Kill Spotlight indexing immediately
       become: true
-      command: mdutil -a -i off
+      shell: |
+        pkill -9 mds || true
+        pkill -9 mdworker || true
+      changed_when: false
+
+    # -----------------------------
+    # Disable indexing safely (with timeout)
+    # -----------------------------
+    - name: Disable Spotlight indexing (non-blocking)
+      become: true
+      shell: |
+        timeout 5 mdutil -a -i off || true
+      changed_when: false
+
+    # -----------------------------
+    # Unload Spotlight services (safe)
+    # -----------------------------
+    - name: Disable Spotlight services
+      become: true
+      shell: |
+        launchctl disable system/com.apple.metadata.mds || true
+        launchctl disable system/com.apple.metadata.mds_stores || true
       changed_when: false
 
     - name: Unload Spotlight services
