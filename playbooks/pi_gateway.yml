@@ -1,0 +1,47 @@
+---
+- name: Configure Raspberry Pi as internet gateway
+  hosts: rpi_gateway
+  become: true
+
+  vars:
+    lan_interface: eth0
+    wan_interface: wlan0
+    gateway_ip: 192.168.50.1/24
+
+  tasks:
+
+    - name: Enable IPv4 forwarding in runtime
+      command: sysctl -w net.ipv4.ip_forward=1
+      changed_when: false
+
+    - name: Add IP addresss to the gateway eth0
+      command: ip addr add {{ gateway_ip }} dev {{ lan_interface }}
+      changed_when: false
+
+    - name: Add NAT masquerade rule
+      iptables:
+        table: nat
+        chain: POSTROUTING
+        out_interface: "{{ wan_interface }}"
+        jump: MASQUERADE
+
+    - name: Allow LAN to WAN forwarding
+      iptables:
+        chain: FORWARD
+        in_interface: "{{ lan_interface }}"
+        out_interface: "{{ wan_interface }}"
+        jump: ACCEPT
+
+    - name: Allow established return traffic
+      iptables:
+        chain: FORWARD
+        in_interface: "{{ wan_interface }}"
+        out_interface: "{{ lan_interface }}"
+        ctstate:
+          - ESTABLISHED
+          - RELATED
+        jump: ACCEPT
+
+    - name: Save IPv4 iptables rules
+      shell: iptables-save > /etc/iptables/rules.v4
+      changed_when: false
