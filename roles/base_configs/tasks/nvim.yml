@@ -1,12 +1,26 @@
 ---
+# Syncs the whole Neovim config from files/nvim/ (init.lua, lua/, colors/).
+# NOTE: the config needs Neovim >= 0.12 for vim.pack; roles/nvim installs whatever
+# the distro ships, so check `nvim --version` on hosts where plugins refuse to load.
+
 - name: Ensure Neovim config directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.config/nvim"
     state: directory
     mode: "0755"
 
-- name: Copy Neovim init.lua
-  copy:
-    src: "{{ playbook_dir }}/../files/nvim/init.lua"
-    dest: "{{ ansible_env.HOME }}/.config/nvim/init.lua"
+- name: Remove config files dropped in earlier revisions
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/nvim/{{ item }}"
+    state: absent
+  loop:
+    - lazy-lock.json # lazy.nvim lockfile, unused now that plugins come from vim.pack
+    - lua/kickstart # upstream kickstart example plugin modules, never enabled
+    - lua/custom
+
+- name: Copy Neovim config
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../files/nvim/"
+    dest: "{{ ansible_env.HOME }}/.config/nvim/"
     mode: "0644"
+    directory_mode: "0755"
